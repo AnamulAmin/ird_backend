@@ -3,13 +3,23 @@ const sqlite3 = require("sqlite3").verbose();
 const { URL } = require("url");
 const db = new sqlite3.Database("./dua_main.sqlite");
 
-const PORT = 3000;
+const PORT = 4000;
 
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
   const pathname = parsedUrl.pathname;
 
+  // CORS Headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   res.setHeader("Content-Type", "application/json");
+
+  if (req.method === "OPTIONS") {
+    res.writeHead(200);
+    res.end();
+    return;
+  }
 
   if (pathname === "/categories") {
     db.all("SELECT * FROM category", [], (err, rows) => {
