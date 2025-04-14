@@ -1,9 +1,11 @@
 const http = require("http");
 const sqlite3 = require("sqlite3").verbose();
 const { URL } = require("url");
-const db = new sqlite3.Database("./dua_main.sqlite");
 
-const PORT = 4000;
+// Use Render’s disk mount path
+const db = new sqlite3.Database("/opt/render/project/src/dua_main.sqlite");
+
+const PORT = process.env.PORT || 4000;
 
 const server = http.createServer((req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
@@ -23,7 +25,11 @@ const server = http.createServer((req, res) => {
 
   if (pathname === "/categories") {
     db.all("SELECT * FROM category", [], (err, rows) => {
-      if (err) return sendError(res, err);
+      if (err) {
+        console.error("Error fetching categories:", err);
+        return sendError(res, err);
+      }
+      console.log("Categories fetched:", rows); // Log for debugging
       res.end(JSON.stringify(rows));
     });
   } else if (pathname === "/subcategories") {
@@ -33,7 +39,11 @@ const server = http.createServer((req, res) => {
       "SELECT * FROM sub_category WHERE cat_id = ?",
       [cat_id],
       (err, rows) => {
-        if (err) return sendError(res, err);
+        if (err) {
+          console.error("Error fetching subcategories:", err);
+          return sendError(res, err);
+        }
+        console.log("Subcategories fetched:", rows); // Log for debugging
         res.end(JSON.stringify(rows));
       }
     );
@@ -46,7 +56,11 @@ const server = http.createServer((req, res) => {
       "SELECT * FROM dua WHERE cat_id = ? AND subcat_id = ?",
       [cat_id, subcat_id],
       (err, rows) => {
-        if (err) return sendError(res, err);
+        if (err) {
+          console.error("Error fetching duas:", err);
+          return sendError(res, err);
+        }
+        console.log("Duas fetched:", rows); // Log for debugging
         res.end(JSON.stringify(rows));
       }
     );
