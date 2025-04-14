@@ -1,9 +1,21 @@
 const http = require("http");
 const sqlite3 = require("sqlite3").verbose();
 const { URL } = require("url");
+const path = require("path");
 
-// Use Render’s disk mount path
-const db = new sqlite3.Database("/opt/render/project/src/dua_main.sqlite");
+// Use environment variable or fallback to relative path
+const DB_PATH =
+  process.env.SQLITE_DB_PATH || path.join(__dirname, "dua_main.sqlite");
+
+console.log(`Attempting to open SQLite database at: ${DB_PATH}`);
+
+const db = new sqlite3.Database(DB_PATH, (err) => {
+  if (err) {
+    console.error("Failed to open SQLite database:", err.message);
+  } else {
+    console.log("Successfully connected to SQLite database");
+  }
+});
 
 const PORT = process.env.PORT || 4000;
 
@@ -29,7 +41,7 @@ const server = http.createServer((req, res) => {
         console.error("Error fetching categories:", err);
         return sendError(res, err);
       }
-      console.log("Categories fetched:", rows); // Log for debugging
+      console.log("Categories fetched:", rows);
       res.end(JSON.stringify(rows));
     });
   } else if (pathname === "/subcategories") {
@@ -43,7 +55,7 @@ const server = http.createServer((req, res) => {
           console.error("Error fetching subcategories:", err);
           return sendError(res, err);
         }
-        console.log("Subcategories fetched:", rows); // Log for debugging
+        console.log("Subcategories fetched:", rows);
         res.end(JSON.stringify(rows));
       }
     );
@@ -60,7 +72,7 @@ const server = http.createServer((req, res) => {
           console.error("Error fetching duas:", err);
           return sendError(res, err);
         }
-        console.log("Duas fetched:", rows); // Log for debugging
+        console.log("Duas fetched:", rows);
         res.end(JSON.stringify(rows));
       }
     );
